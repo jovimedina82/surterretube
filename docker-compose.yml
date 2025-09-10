@@ -1,0 +1,49 @@
+services:
+  srs:
+    image: ossrs/srs:5
+    container_name: srs
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /mnt/media:/mnt/media
+      - ./configs/srs/srs.conf:/usr/local/srs/conf/docker.conf:ro
+    command: ["/usr/local/srs/objs/srs", "-c", "conf/docker.conf"]
+    # Note: SRS security hardening disabled for compatibility
+
+  postgres:
+    image: postgres:16
+    container_name: postgres_db
+    restart: unless-stopped
+    env_file:
+      - .env  # Load from environment file instead of hardcoding
+    environment:
+      # Override with secure defaults if not provided in .env
+      POSTGRES_USER: ${POSTGRES_USER:-surterre}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-surterretube_prod}
+      # Additional security configurations
+      POSTGRES_INITDB_ARGS: "--auth=scram-sha-256"
+    ports:
+      - "127.0.0.1:5432:5432"     # change to 127.0.0.1:5433:5432 if 5432 is busy
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-surterre} -d $${POSTGRES_DB:-surterretube_prod}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+volumes:
+  pgdata:

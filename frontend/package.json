@@ -1,0 +1,35 @@
+{
+  "name": "surterretube-frontend",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3000"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^3.19.0",
+    "@azure/msal-react": "^2.0.19",
+    "bcryptjs": "^3.0.2",
+    "busboy": "^1.6.0",
+    "dotenv": "^17.2.1",
+    "hls.js": "^1.6.9",
+    "jose": "^6.0.13",
+    "next": "^14.2.31",
+    "pg": "^8.16.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.12",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/busboy": "^1.5.4",
+    "@types/node": "^20.11.30",
+    "@types/pg": "^8.15.5",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.12",
+    "typescript": "^5.6.2"
+  }
+}

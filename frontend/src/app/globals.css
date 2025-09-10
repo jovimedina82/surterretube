@@ -1,0 +1,96 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* your custom globals below if any */
+
+@theme {
+  --color-brand: #3d6864;
+}
+/* App palette */
+
+/* Custom animations */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes spin-slow {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.8), 0 0 40px rgba(16, 185, 129, 0.4);
+  }
+}
+
+/* Utility classes */
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+
+/* Global text + background */
+html, body {
+  /* background: var(--bg); */
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple Color Emoji",
+               "Segoe UI Emoji", "Noto Color Emoji", "Noto Emoji", emoji, sans-serif;
+}
+:root {
+  --header-h: 64px;   /* tune if you want */
+  --footer-h: 56px;   /* tune if you want */
+}
+
+
+/* Twemoji image sizing + emoji-capable text */
+
+.emoji-text {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+               "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Noto Emoji", emoji, sans-serif;
+  font-variant-emoji: emoji;
+}
+
+.bg-brand,
+header.bg-brand {
+  background-color: #3d6864 !important;
+}
+/* Optional: fine-tune the shelf container */
+.vodShelf {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+}
