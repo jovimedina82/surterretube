@@ -1,0 +1,119 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                   SURTERRETUBE QUICK REFERENCE                           ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌─ SCRIPTS ─────────────────────────────────────────────────────────────────┐
+│                                                                            │
+│  Health Check:                                                             │
+│  $ /opt/surterretube/scripts/health-check.sh                              │
+│    Check all services status                                              │
+│                                                                            │
+│  Stream Diagnostics:                                                       │
+│  $ sudo /opt/surterretube/scripts/stream-diagnostics.sh                   │
+│    Monitor incoming streams in real-time (MUST RUN WHILE STREAMING!)      │
+│                                                                            │
+│  OBS Configuration:                                                        │
+│  $ /opt/surterretube/scripts/obs-config-helper.sh                         │
+│    Display OBS setup instructions                                         │
+│                                                                            │
+│  Wirecast Configuration:                                                   │
+│  $ /opt/surterretube/scripts/wirecast-config-helper.sh                    │
+│    Display Wirecast setup instructions                                    │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ STREAMING ENDPOINTS ─────────────────────────────────────────────────────┐
+│                                                                            │
+│  RTMPS (Recommended):                                                      │
+│  Server: rtmps://surterretube.com:4443/live                               │
+│  Key:    3b6255b241e904335b9fe7756de6ae17                                 │
+│                                                                            │
+│  RTMP (Fallback):                                                          │
+│  Server: rtmp://surterretube.com:1935/live                                │
+│  Key:    3b6255b241e904335b9fe7756de6ae17                                 │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CRITICAL ENCODER SETTINGS (OBS/WIRECAST) ────────────────────────────────┐
+│                                                                            │
+│  ⭐ MUST USE (Both OBS and Wirecast):                                      │
+│    • Encoder: x264 (Software) - NOT Apple H.264/NVENC/QSV/AMF             │
+│    • Profile: baseline or main - NEVER high                               │
+│    • B-frames: 0 (disabled) - CRITICAL FOR WIRECAST                       │
+│    • Keyframe/GOP: 2 seconds (60 frames @ 30fps)                          │
+│                                                                            │
+│  Recommended:                                                              │
+│    • Rate Control: CBR                                                     │
+│    • Bitrate: 2500-4000 Kbps                                              │
+│    • Resolution: 1280x720                                                  │
+│    • FPS: 30                                                               │
+│    • CPU Preset: veryfast (OBS) / Medium (Wirecast)                       │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ SERVICE MANAGEMENT ──────────────────────────────────────────────────────┐
+│                                                                            │
+│  Check Status:                                                             │
+│  $ systemctl status nginx                                                  │
+│  $ systemctl status stunnel4                                               │
+│  $ systemctl status surterretube-frontend                                  │
+│  $ systemctl status surterretube-chat                                      │
+│  $ sudo docker ps                                                          │
+│                                                                            │
+│  Restart Services:                                                         │
+│  $ sudo systemctl restart nginx                                            │
+│  $ sudo systemctl restart stunnel4                                         │
+│  $ sudo systemctl restart surterretube-frontend                            │
+│  $ sudo systemctl restart surterretube-chat                                │
+│  $ sudo docker restart srs                                                 │
+│  $ sudo docker restart postgres_db                                         │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ LOGS ────────────────────────────────────────────────────────────────────┐
+│                                                                            │
+│  View Logs:                                                                │
+│  $ sudo journalctl -u nginx -f                                             │
+│  $ sudo journalctl -u stunnel4 -f                                          │
+│  $ sudo journalctl -u surterretube-frontend -f                             │
+│  $ sudo journalctl -u surterretube-chat -f                                 │
+│  $ sudo docker logs -f srs                                                 │
+│  $ sudo tail -f /var/log/stunnel4/rtmps.log                               │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ COMMON ISSUES ───────────────────────────────────────────────────────────┐
+│                                                                            │
+│  Issue: Stream drops immediately                                           │
+│  Fix:   Change OBS Profile to 'baseline'                                  │
+│                                                                            │
+│  Issue: Can't connect                                                      │
+│  Fix:   Try plain RTMP (port 1935) instead of RTMPS                       │
+│                                                                            │
+│  Issue: High CPU usage                                                     │
+│  Fix:   Change CPU Preset to 'ultrafast' or use hardware encoder          │
+│                                                                            │
+│  Issue: "not annexb" error                                                 │
+│  Fix:   Must use x264 encoder with baseline profile                       │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+┌─ USEFUL COMMANDS ─────────────────────────────────────────────────────────┐
+│                                                                            │
+│  Check stream status:                                                      │
+│  $ curl http://127.0.0.1:3001/stats                                        │
+│                                                                            │
+│  Check listening ports:                                                    │
+│  $ sudo ss -tlnp | grep -E ":(80|443|1935|4443|3000|3001|5432|8080)"      │
+│                                                                            │
+│  Check recent connections:                                                 │
+│  $ sudo docker logs srs --tail 50 2>&1 | grep "RTMP client"               │
+│                                                                            │
+│  Test RTMP connection:                                                     │
+│  $ ffmpeg -i test.mp4 -c copy -f flv rtmp://127.0.0.1:1935/live/test     │
+│                                                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  For more help: https://github.com/ossrs/srs/wiki                        ║
+╚══════════════════════════════════════════════════════════════════════════╝
