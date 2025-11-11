@@ -59,8 +59,8 @@ export async function GET() {
           file: row.file || row.filename,
           size: row.size,
           mtime: row.mtime,
-          url: `/vod/${row.filename}`,
-          thumb: row.thumb_filename ? `/vod/thumbs/${row.thumb_filename}` : null,
+          url: `/vod/${encodeURIComponent(row.filename)}`, // URL encode filename
+          thumb: row.thumb_filename ? `/vod/thumbs/${encodeURIComponent(row.thumb_filename)}` : null,
           hasDbId: true, // Flag to indicate this has a real DB ID
         };
         dbVideos.set(row.filename, item);
@@ -85,7 +85,7 @@ export async function GET() {
         let thumb: string | null = null;
         try {
           await fsp.access(thumbPath);
-          thumb = `/vod/thumbs/${thumbName}`;
+          thumb = `/vod/thumbs/${encodeURIComponent(thumbName)}`;
         } catch {}
 
         allItems.push({
@@ -93,7 +93,7 @@ export async function GET() {
           file,
           size: st.size,
           mtime: st.mtime.toISOString(),
-          url: `/vod/${file}`,
+          url: `/vod/${encodeURIComponent(file)}`, // URL encode filename for spaces and special chars
           thumb,
           hasDbId: false, // Flag to indicate this is filesystem-only
         });
