@@ -152,7 +152,11 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
   const isAuthed = useIsAuthenticated();
   const activeAccount = instance.getActiveAccount() ?? accounts[0] ?? null;
   const userName = activeAccount?.name || 'User';
-  const userSub = activeAccount?.localAccountId || activeAccount?.homeAccountId || '';
+  // Use idTokenClaims.sub for unique user identifier, fallback to homeAccountId
+  const userSub = (activeAccount?.idTokenClaims?.sub as string) ||
+                  activeAccount?.homeAccountId ||
+                  activeAccount?.localAccountId ||
+                  '';
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,6 +191,14 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
     e.preventDefault();
     if (!commentText.trim() || !isAuthed || submitting) return;
 
+    // Debug: log user info
+    console.log('Submitting comment with:', { userSub, userName, isAuthed });
+
+    if (!userSub) {
+      alert('Unable to identify user. Please try signing out and signing back in.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (editingComment) {
@@ -203,7 +215,10 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
           }
         );
 
-        if (!response.ok) throw new Error('Failed to update comment');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to update comment');
+        }
         setEditingComment(null);
       } else {
         // Create new comment or reply
@@ -218,7 +233,11 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to add comment');
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('API Error:', errorData);
+          throw new Error(errorData.error || 'Failed to add comment');
+        }
         setReplyingTo(null);
       }
 
@@ -226,7 +245,8 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
       await loadComments();
     } catch (error) {
       console.error('Error submitting comment:', error);
-      alert('Failed to submit comment. Please try again.');
+      const message = error instanceof Error ? error.message : 'Failed to submit comment. Please try again.';
+      alert(message);
     } finally {
       setSubmitting(false);
     }
