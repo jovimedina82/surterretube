@@ -79,6 +79,7 @@ export default function AdminSidebar() {
           {sectionHeader('Content', '🎬')}
           <div className="space-y-1">
             {item('/admin/content', 'Library', '📚')}
+            {item('/admin/content/manage', 'Manage Videos', '📹')}
             {item('/admin/content/scheduling', 'Scheduling', '📅')}
             {item('/admin/content/comments', 'Comments', '💬')}
           </div>

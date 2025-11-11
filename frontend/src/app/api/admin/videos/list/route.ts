@@ -39,7 +39,7 @@ export async function GET() {
     const allItems: any[] = [];
 
     try {
-      // 1. Get videos from database
+      // 1. Get published videos from database
       const result = await client.query(
         `SELECT
           id,
@@ -47,8 +47,10 @@ export async function GET() {
           display_name as file,
           size_bytes as size,
           uploaded_at as mtime,
-          thumb_filename
+          thumb_filename,
+          is_published
         FROM admin_videos
+        WHERE is_published = true
         ORDER BY uploaded_at DESC`
       );
 

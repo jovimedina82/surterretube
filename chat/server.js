@@ -238,6 +238,73 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
+  // DVR webhook - automatically add recorded videos to database
+  if (req.method === 'POST' && url.pathname === '/srs/dvr') {
+    const body = await readBodyJSON(req)
+    if (!body) return sendJSON(res, 400, { error: 'invalid_json' })
+
+    console.log('DVR webhook received:', JSON.stringify(body))
+
+    try {
+      const fs = require('fs')
+      const path = require('path')
+
+      // Extract file path from webhook
+      const filePath = body.file || body.cwd
+      if (!filePath) {
+        console.error('DVR webhook missing file path')
+        return sendJSON(res, 200, { code: 0, message: 'no_file_path' })
+      }
+
+      // Get just the filename
+      const filename = path.basename(filePath)
+
+      // Check if file exists and get stats
+      let stats
+      try {
+        stats = fs.statSync(filePath)
+      } catch (err) {
+        console.error('DVR file not found:', filePath, err)
+        return sendJSON(res, 200, { code: 0, message: 'file_not_found' })
+      }
+
+      // Extract display name from filename (remove timestamp and extension)
+      // Format: live/stream_20231111_123456.mp4 -> stream
+      let displayName = filename
+        .replace(/^live[_\/]/, '')  // Remove live/ or live_
+        .replace(/_\d{8}_\d{6}\.mp4$/, '')  // Remove _YYYYMMDD_HHMMSS.mp4
+        .replace(/\.mp4$/i, '')  // Remove .mp4
+
+      // Check if video already exists
+      const existing = await query(
+        'SELECT id FROM admin_videos WHERE filename = $1',
+        [filename]
+      )
+
+      if (existing.rows.length > 0) {
+        console.log('DVR video already in database:', filename)
+        return sendJSON(res, 200, { code: 0, message: 'already_exists', id: existing.rows[0].id })
+      }
+
+      // Insert into database as unpublished
+      const result = await query(
+        `INSERT INTO admin_videos
+          (filename, display_name, size_bytes, uploaded_at, is_published)
+        VALUES ($1, $2, $3, $4, false)
+        RETURNING id`,
+        [filename, displayName, stats.size, new Date(stats.mtime)]
+      )
+
+      const videoId = result.rows[0].id
+      console.log(`DVR video added to database: ${filename} (ID: ${videoId}, unpublished)`)
+
+      return sendJSON(res, 200, { code: 0, message: 'video_added', id: videoId, filename })
+    } catch (e) {
+      console.error('DVR webhook error:', e)
+      return sendJSON(res, 500, { error: 'db_error', details: e.message })
+    }
+  }
+
   if (req.method === 'POST' && url.pathname === '/srs/hls') {
     return sendJSON(res, 200, { code: 0 })
   }
