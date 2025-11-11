@@ -168,7 +168,8 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Check if this is a valid numeric video ID (comments only work for database videos)
-  const isValidVideoId = !isNaN(videoId);
+  // Video ID must be a positive number (greater than 0)
+  const isValidVideoId = !isNaN(videoId) && videoId > 0;
 
   // Load comments
   const loadComments = useCallback(async () => {
