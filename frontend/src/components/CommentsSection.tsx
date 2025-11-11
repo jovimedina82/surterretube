@@ -167,8 +167,16 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Check if this is a valid numeric video ID (comments only work for database videos)
+  const isValidVideoId = !isNaN(videoId);
+
   // Load comments
   const loadComments = useCallback(async () => {
+    if (!isValidVideoId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await fetch(`/api/videos/${videoId}/comments`);
@@ -180,7 +188,7 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
     } finally {
       setLoading(false);
     }
-  }, [videoId]);
+  }, [videoId, isValidVideoId]);
 
   useEffect(() => {
     loadComments();
@@ -293,6 +301,23 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
     setReplyingTo(null);
     setEditingComment(null);
   };
+
+  // If not a valid video ID, show message that comments are not available
+  if (!isValidVideoId) {
+    return (
+      <section className="mt-6 rounded-2xl border-2 border-gray-200 bg-gray-50 p-6 shadow-lg">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-white shadow-sm">
+            💬
+          </div>
+          <h3 className="text-lg font-bold text-gray-700">Comments</h3>
+        </div>
+        <div className="rounded-xl border border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-600">
+          Comments are not available for legacy videos. Only newly uploaded videos support comments.
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mt-6 rounded-2xl border-2 border-emerald-100/50 bg-gradient-to-b from-white/95 to-emerald-50/30 p-6 shadow-lg backdrop-blur-sm">

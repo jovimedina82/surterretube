@@ -164,7 +164,7 @@ export default function PublishedVideos() {
 
             {/* Comments Section */}
             <div className="px-6 pb-6">
-              <CommentsSection videoId={parseInt(selectedVideo.id)} />
+              <CommentsSection videoId={parseInt(selectedVideo.id) || 0} />
             </div>
           </div>
         </div>
