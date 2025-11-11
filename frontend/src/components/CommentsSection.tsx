@@ -46,7 +46,6 @@ function CommentItem({
   currentUserName,
   onReply,
   onEdit,
-  onDelete,
   depth = 0,
 }: {
   comment: Comment;
@@ -54,7 +53,6 @@ function CommentItem({
   currentUserName: string;
   onReply: (parentId: number) => void;
   onEdit: (comment: Comment) => void;
-  onDelete: (commentId: number) => void;
   depth?: number;
 }) {
   const isOwner = comment.user_sub === currentUserSub;
@@ -107,20 +105,12 @@ function CommentItem({
             Reply
           </button>
           {isOwner && (
-            <>
-              <button
-                onClick={() => onEdit(comment)}
-                className="text-blue-600 transition hover:text-blue-700 hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => onDelete(comment.id)}
-                className="text-red-600 transition hover:text-red-700 hover:underline"
-              >
-                Delete
-              </button>
-            </>
+            <button
+              onClick={() => onEdit(comment)}
+              className="text-blue-600 transition hover:text-blue-700 hover:underline"
+            >
+              Edit
+            </button>
           )}
         </div>
       </div>
@@ -136,7 +126,6 @@ function CommentItem({
               currentUserName={currentUserName}
               onReply={onReply}
               onEdit={onEdit}
-              onDelete={onDelete}
               depth={depth + 1}
             />
           ))}
@@ -277,24 +266,7 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
     textareaRef.current?.focus();
   };
 
-  // Handle delete
-  const handleDelete = async (commentId: number) => {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
-
-    try {
-      const response = await fetch(`/api/videos/${videoId}/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_sub: userSub }),
-      });
-
-      if (!response.ok) throw new Error('Failed to delete comment');
-      await loadComments();
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      alert('Failed to delete comment. Please try again.');
-    }
-  };
+  // Note: Delete functionality removed - only admins can delete via admin panel
 
   // Cancel editing or replying
   const handleCancel = () => {
@@ -411,7 +383,6 @@ export default function CommentsSection({ videoId }: CommentsSectionProps) {
                 currentUserName={userName}
                 onReply={handleReply}
                 onEdit={handleEdit}
-                onDelete={handleDelete}
               />
             ))}
           </div>

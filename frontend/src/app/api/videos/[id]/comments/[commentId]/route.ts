@@ -137,79 +137,19 @@ export async function PUT(
 
 /**
  * DELETE /api/videos/[id]/comments/[commentId]
- * Delete a comment (by author or admin)
+ * Delete a comment (admin only via admin panel)
+ * Regular users cannot delete comments - only admins can via /api/admin/comments
  */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string; commentId: string } }
 ) {
-  const videoId = parseInt(params.id);
-  const commentId = parseInt(params.commentId);
-
-  if (isNaN(videoId) || isNaN(commentId)) {
-    return NextResponse.json(
-      { error: 'Invalid video ID or comment ID' },
-      { status: 400 }
-    );
-  }
-
-  try {
-    // Get user_sub and is_admin from request body or query params
-    const body = await request.json().catch(() => ({}));
-    const user_sub = body.user_sub || request.nextUrl.searchParams.get('user_sub');
-    const is_admin = body.is_admin || false;
-
-    if (!user_sub) {
-      return NextResponse.json(
-        { error: 'User authentication required' },
-        { status: 401 }
-      );
-    }
-
-    const client = await pool.connect();
-
-    try {
-      // Check if comment exists
-      const commentCheck = await client.query<Comment>(
-        `SELECT id, user_sub, video_id
-         FROM video_comments
-         WHERE id = $1 AND video_id = $2`,
-        [commentId, videoId]
-      );
-
-      if (commentCheck.rows.length === 0) {
-        return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
-      }
-
-      const existingComment = commentCheck.rows[0];
-
-      // Verify the user is the author of the comment OR is an admin
-      if (existingComment.user_sub !== user_sub && !is_admin) {
-        return NextResponse.json(
-          { error: 'You can only delete your own comments' },
-          { status: 403 }
-        );
-      }
-
-      // Delete the comment (CASCADE will delete replies automatically)
-      await client.query(
-        'DELETE FROM video_comments WHERE id = $1',
-        [commentId]
-      );
-
-      return NextResponse.json({
-        message: 'Comment deleted successfully',
-        deleted_id: commentId,
-      });
-
-    } finally {
-      client.release();
-    }
-  } catch (error) {
-    console.error('Error deleting comment:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete comment' },
-      { status: 500 }
-    );
-  }
+  // Comment deletion is only available through the admin panel
+  // Regular users cannot delete comments
+  return NextResponse.json(
+    {
+      error: 'Comment deletion is only available to administrators. Please contact an admin to remove inappropriate content.'
+    },
+    { status: 403 }
+  );
 }
