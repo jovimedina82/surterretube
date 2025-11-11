@@ -80,6 +80,7 @@ export default function AdminSidebar() {
           <div className="space-y-1">
             {item('/admin/content', 'Library', '📚')}
             {item('/admin/content/scheduling', 'Scheduling', '📅')}
+            {item('/admin/content/comments', 'Comments', '💬')}
           </div>
         </div>
 
